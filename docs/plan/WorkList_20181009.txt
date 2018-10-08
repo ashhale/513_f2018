@@ -1,0 +1,41 @@
+Proposal - done
+
+Git repository - done
+
+Rough plan for structure of tooling:
+
+	IDE - Atom - done
+
+	Where will active code development take place: - done
+		Local Windows machine editing files in Atom with connection to Git Repo
+		Copy files to cs.uml.edu each week
+
+	How to move code as needed between systems - done
+		Via putty/scp/sftp
+
+Rough UX design
+
+	Full browser tab, mostly occupied by drawing canvas - see WireframeV3 and PaperMockupV1
+		Toolbar off to side of canvas
+		Conceptual design of how user specifies/draws each HTML component
+		
+	Decide initial/phase 1 HTML components to support (DIV, etc.)
+		Consult UI/UX teacher for input
+
+Rough source code structure
+
+	Where do HTML, JS and CSS live - done
+		Under src folder on GitHub
+
+	Other types of files? - Maybe, have to look at Konva more
+
+	Create ~ahale/513_f2018 - done
+
+First pass investigation of useful libraries
+
+	Konva
+		Complete tutorials
+
+	???
+
+Install and configure dev environment - done

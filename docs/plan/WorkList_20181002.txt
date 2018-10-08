@@ -1,0 +1,47 @@
+Proposal - done
+
+Git repository
+
+	Layout to start
+
+		/src
+
+		/doc
+
+			/UXdesign
+
+	Add Haim as contributor
+
+Rough plan for structure of tooling
+
+	IDE - Atom?
+
+	Where will active code development take place
+
+	How to move code as needed between systems
+
+Rough UX design
+
+	Full browser tab, mostly occupied by drawing canvas
+
+	Some controls in a toolbar across the top
+
+	Second toolbar with palette
+
+	Multiple iterations, all to be shared via GitHub
+
+	Conceptual design of how user specifies/draws each HTML component
+
+	Decide initial/phase 1 HTML components to support (DIV, etc.)
+
+Rough source code structure
+
+	Where do HTML, JS and CSS live?
+
+	Other types of files?
+
+	Create ~ahale/513_f2018 - done
+
+First pass investigation of useful libraries
+
+Install and configure dev environment - done

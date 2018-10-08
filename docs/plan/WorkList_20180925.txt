@@ -1,0 +1,11 @@
+Proposal - done
+
+Git repository
+
+Rough plan for structure of tooling
+
+Rough UX design
+
+Rough source code structure
+
+Install and configure dev environment
