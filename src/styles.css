@@ -1,0 +1,59 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: Red;
+}
+
+.drawing {
+    height: 100%;
+    width: 1000px;
+    padding: 0px 10px;
+    background-color: Cornsilk;
+}
+
+.pallette {
+    height: 100%;
+    width: 160px;
+    margin-left: 1000px; /* Same as the width of the sidenav */
+    font-size: 28px; /* Increased text to enable scrolling */
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: Cyan;
+    overflow-x: hidden;
+    padding-top: 20px;
+}
+
+.pallette a {
+    padding: 6px 8px 6px 16px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+}
+
+.pallette a:hover {
+    color: #f1f1f1;
+}
+
+@media screen and (max-height: 450px) {
+    .pallette {padding-top: 15px;}
+    .pallette a {font-size: 18px;}
+}
+
+.tooltabs {
+    height: 100%;
+    width: 160px;
+    margin-left: 1160px; /* Same as the width of the sidenav */
+    font-size: 28px; /* Increased text to enable scrolling */
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: Black;
+    color: White;
+    overflow-x: hidden;
+    padding-top: 20px;
+}
