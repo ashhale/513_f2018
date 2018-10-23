@@ -2,110 +2,148 @@
 <html>
 
 <head>
-    <script src="https://cdn.rawgit.com/konvajs/konva/2.4.0/konva.min.js"></script>
-    <meta charset="utf-8">
-    <title>Draw a Web Page</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Draw a Webpage!</title>
+<link rel="stylesheet" href="sidebar.css">
+<script src="https://cdn.rawgit.com/konvajs/konva/2.4.0/konva.min.js"></script>
+<script src="sidebar.js"></script>
 </head>
 
 <body>
-    <!-- Main drawing area -->
-    <div class="drawing" id="drawing">
-        <p>Main Drawing Area</p>
+
+<!-- Collapsable Sidebar -->
+<div id="mySidebar" class="sidebar">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">[x]</a>
+  <button class="tablink" onclick="openTab('About', this, 'red')" id="defaultOpen">About</button>
+  <button class="tablink" onclick="openTab('Toolbar', this, 'red')">Toolbar</button>
+  <button class="tablink" onclick="openTab('Object Info', this, 'red')">Object Info</button>
+
+  <div id="About" class="tabcontent">
+    <h1>About</h1>
+    <p>Welcome to my project!</p>
+    <p>This is a learning tool for those just getting into user interface/user experience (UI/UX) design</p>
+    <p>Start by going to the Toolbar and selecting an object to put on the canvas to the right</p>
+    <p>When you select an object this sidebar will close</p>
+    <p>Just click anywhere on the canvas to place a default version of the selected object</p>
+    <p>You can change the shape's properties by selecting it on the canvas, opening the sidebar, and going to the Object Info tab</p>
+    <p>Enjoy and have fun!</p>
+    <p>NOTE: This is still a work in progress and some of the features mentioned above may or may not work at this time</p>
+  </div>
+
+  <div id="Toolbar" class="tabcontent">
+    <h1>Toolbar</h1>
+    <p>Click on the object you want then click on the canvas</p>
+    <p>A default version of the selected object will appear</p>
+    <p>You can change the properties of the object in the Object Info tab</p>
+
+    <div class="btnGroupV">
+
+      <div class="btnGroupH">
+        <button style="background-image: url(icons/circle_icon.png); background-size: 100%; background-repeat: no-repeat;")>Circle</button>
+        <button style="background-image: url(icons/rect_icon.png); background-size: 100%; background-repeat: no-repeat;">Rect</button>
+        <button style="background-image: url(icons/ellipse_icon.png); background-size: 100%; background-repeat: no-repeat;">Ellipse</button>
+        <button style="background-image: url(icons/wedge_icon.png); background-size: 100%; background-repeat: no-repeat;">Wedge</button>
+      </div>
+
+      <div class="btnGroupH">
+        <button>Line-Simple</button>
+        <button>Line-Polygon</button>
+        <button>Line-Spline</button>
+        <button>Line-Blob</button>
+      </div>
+
+      <div class="btnGroupH">
+        <button>Text</button>
+        <button>Image</button>
+        <button>Arrow</button>
+        <button>Label</button>
+      </div>
+
+      <div class="btnGroupH">
+        <button style="width: 33.3%">Star</button>
+        <button style="width: 33.3%">Ring</button>
+        <button style="width: 33.3%">Arc</button>
+      </div>
+
+      <div class="btnGroupH">
+        <button style="width: 50%">Regular Polygon</button>
+        <button style="width: 50%">Custom Shape</button>
+      </div>
+
     </div>
 
-    <!-- Shapes to draw -->
-    <div class="pallette" id = "pallette">
-        <p>Shape Pallette</p>
-    </div>
+  </div>
 
-    <!-- Multiple tool tabs -->
-    <div class="tooltabs">
-        <p>Toolbar</p>
-    </div>
+  <div id="Object Info" class="tabcontent">
+    <h1>Object Info</h1>
+    <p>Sorry nothing here yet!</p>
+  </div>
 
-    <!-- Put stuff in the main drawing area -->
-    <script>
-    var stageDraw = new Konva.Stage({
-        container: 'drawing',
-        width: "1000",
-        height: "1000"
-    });
+</div>
 
-    var layerDraw = new Konva.Layer();
+<!-- Menu Area -->
+<div id="main">
+  <button class="openbtn" onclick="openNav()">Menu</button>
+  <p style="font-size: 25px">Click the Menu button to get started</p>
 
-    /*
-    * create a triangle shape by defining a
-    * drawing function which draws a triangle
-    */
-    var triangle = new Konva.Shape({
-        sceneFunc: function (context, shape) {
-            context.beginPath();
-            context.moveTo(20, 50);
-            context.lineTo(220, 80);
-            context.quadraticCurveTo(150, 100, 260, 170);
-            context.closePath();
+  <!-- Main drawing area -->
+  <div class="drawing" id="drawing" style="border: 3px solid blue;">
+      <p>Main Drawing Area</p>
+  </div>
+</div>
 
-            // (!) Konva specific method, it is very important
-            context.fillStrokeShape(shape);
-        },
-        fill: '#00D2FF',
-        stroke: 'black',
-        strokeWidth: 4
-    });
+<!-- Script for main drawing area -->
+<script>
+var stageDraw = new Konva.Stage({
+    container: 'drawing',
+    width: "1000",
+    height: "1000"
+});
 
-    var rect = new Konva.Rect({
-        x: 50,
-        y: 50,
-        width: 100,
-        height: 50,
-        fill: 'green',
-        stroke: 'black',
-        strokeWidth: 4
-    });
+var layerDraw = new Konva.Layer();
 
-    // add the shape to the layer
-    layerDraw.add(rect);
+/*
+* create a triangle shape by defining a
+* drawing function which draws a triangle
+*/
+var triangle = new Konva.Shape({
+    sceneFunc: function (context, shape) {
+        context.beginPath();
+        context.moveTo(20, 50);
+        context.lineTo(220, 80);
+        context.quadraticCurveTo(150, 100, 260, 170);
+        context.closePath();
 
-    triangle.draggable('true');
-    rect.draggable('true');
+        // (!) Konva specific method, it is very important
+        context.fillStrokeShape(shape);
+    },
+    fill: '#00D2FF',
+    stroke: 'black',
+    strokeWidth: 4
+});
 
-    // add the triangle shape to the layer
-    layerDraw.add(triangle);
+var rect = new Konva.Rect({
+    x: 50,
+    y: 50,
+    width: 100,
+    height: 50,
+    fill: 'green',
+    stroke: 'black',
+    strokeWidth: 4
+});
 
-    // add the layer to the stage
-    stageDraw.add(layerDraw);
-    </script>
+// add the shape to the layer
+layerDraw.add(rect);
 
-    <!-- Put stuff in the shape pallette area -->
-    <script>
-    var stagePallette = new Konva.Stage({
-        container: 'pallette',
-        width: "1000",
-        height: "1000"
-    });
+triangle.draggable('true');
+rect.draggable('true');
 
-    var layerPallette = new Konva.Layer();
+// add the triangle shape to the layer
+layerDraw.add(triangle);
 
-    var rectTool = new Konva.Rect({
-        x: 50,
-        y: 50,
-        width: 100,
-        height: 50,
-        fill: 'blue',
-        stroke: 'black',
-        strokeWidth: 4
-    });
-
-    // add the shape to the layer
-    layerPallette.add(rectTool);
-
-    rectTool.draggable('true');
-
-    // add the layer to the stage
-    stagePallette.add(layerPallette);
-    </script>
-
+// add the layer to the stage
+stageDraw.add(layerDraw);
+</script>
 
 </body>
 
