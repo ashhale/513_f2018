@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<!-- This file is used to render README.md when viewed on a web server -->
+
+<head>
+<meta charset="UTF-8">
+<title>README.md</title>
+
+<!-- From https://github.com/markdown-it/markdown-it -->
+<!-- and https://cdnjs.com/libraries/markdown-it -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.4.2/markdown-it.js"></script>
+
+<script type="text/javascript">
+// Based on https://stackoverflow.com/a/6348338
+function load() {
+    var file = new XMLHttpRequest();
+    file.open("GET", "README.md", true);
+    file.onreadystatechange = function() {
+      if (file.readyState === 4) {  // Makes sure the document is ready to parse
+        if (file.status === 200) {  // Makes sure it's found the file
+          text = file.responseText;
+            var md = window.markdownit();
+            var result = md.render(text);
+            // Add a Try-it link when viewed on a web server
+            // console.log(result);  // For debugging
+          document.getElementById("div1").innerHTML = result;
+        }
+      }
+    }
+    file.send();
+}
+</script>
+
+</head>
+
+<body onload="load()">
+
+<h2><a href="src/index.html">TRY IT NOW!</a></h2>
+<hr>
+
+<div id="div1">README.md will appear here</div>
+
+<hr>
+<a href="https://github.com/ashhale/513_f2018">See this project on GitHub</a>
+
+</body>
+</html>

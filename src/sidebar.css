@@ -71,7 +71,7 @@ body {
     cursor: pointer;
     padding: 14px 16px;
     font-size: 17px;
-    width: 33%;
+    width: 33.3%;
 }
 
 /* Change background color of buttons on hover */
@@ -94,7 +94,7 @@ body {
 
 /* btnGroupH Style */
 .btnGroupH button {
-    background-color: #4CAF50; /* Green background */
+    background-color: lightblue; /* Green background */
     border: 3px solid green; /* Green border */
     color: black; /* Black text */
     font-size: 17px;
@@ -102,6 +102,9 @@ body {
     cursor: pointer; /* Pointer/hand icon */
     float: left; /* Float the buttons side by side */
     min-height: 100px;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 /* btnGroupH Style when not last in group */
@@ -124,7 +127,7 @@ body {
 
 /* buttonGroupV Style */
 .btnGroupV button {
-    background-color: #4CAF50; /* Green background */
+    background-color: lightblue; /* Green background */
     border: 1px solid green; /* Green border */
     color: black; /* Black text */
     font-size: 17px;
@@ -139,9 +142,65 @@ body {
     border-bottom: none; /* Prevent double borders */
 }
 
-.myBtn {
-  background-image:url("/icon/circle_icon.png");
-  background-repeat:no-repeat;
+/* Add this attribute to the element that needs a tooltip */
+[data-tooltip] {
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+
+/* Hide the tooltip content by default */
+[data-tooltip]:before,
+[data-tooltip]:after {
+  visibility: hidden;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  filter: progid: DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Position tooltip above the element */
+[data-tooltip]:before {
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  margin-bottom: 5px;
+  margin-left: -80px;
+  padding: 7px;
+  width: 160px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  background-color: white;
+  color: black;
+  content: attr(data-tooltip);
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+/* Triangle hack to make tooltip look like a speech bubble */
+[data-tooltip]:after {
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  margin-left: -5px;
+  width: 0;
+  border-top: 5px solid #fff;
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
+  content: " ";
+  font-size: 0;
+  line-height: 0;
+}
+
+/* Show tooltip content on hover */
+[data-tooltip]:hover:before,
+[data-tooltip]:hover:after {
+  visibility: visible;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+  filter: progid: DXImageTransform.Microsoft.Alpha(Opacity=100);
+  opacity: 1;
 }
 
 /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */

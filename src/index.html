@@ -9,7 +9,7 @@
 <script src="sidebar.js"></script>
 </head>
 
-<body>
+<body onload="clickDefaultButton()">
 
 <!-- Collapsable Sidebar -->
 <div id="mySidebar" class="sidebar">
@@ -34,40 +34,40 @@
     <h1>Toolbar</h1>
     <p>Click on the object you want then click on the canvas</p>
     <p>A default version of the selected object will appear</p>
-    <p>You can change the properties of the object in the Object Info tab</p>
+    <p>You can change the properties of the object by selecting it then going to the Object Info tab</p>
 
     <div class="btnGroupV">
 
       <div class="btnGroupH">
-        <button style="background-image: url(icons/circle_icon.png); background-size: 100%; background-repeat: no-repeat;")>Circle</button>
-        <button style="background-image: url(icons/rect_icon.png); background-size: 100%; background-repeat: no-repeat;">Rect</button>
-        <button style="background-image: url(icons/ellipse_icon.png); background-size: 100%; background-repeat: no-repeat;">Ellipse</button>
-        <button style="background-image: url(icons/wedge_icon.png); background-size: 100%; background-repeat: no-repeat;">Wedge</button>
+        <button data-tooltip="Circle" style="background-image: url(icons/circle_icon.png)"></button>
+        <button data-tooltip="Rectangle" style="background-image: url(icons/rect_icon.png)"></button>
+        <button data-tooltip="Ellipse" style="background-image: url(icons/ellipse_icon.png)"></button>
+        <button data-tooltip="Wedge" style="background-image: url(icons/wedge_icon.png)"></button>
       </div>
 
       <div class="btnGroupH">
-        <button>Line-Simple</button>
-        <button>Line-Polygon</button>
-        <button>Line-Spline</button>
-        <button>Line-Blob</button>
+        <button data-tooltip="Line-Simple" style="background-image: url(icons/line_simple_icon.png)"></button>
+        <button data-tooltip="Line-Polygon" style="background-image: url(icons/line_polygon_icon.png)"></button>
+        <button data-tooltip="Line-Spline" style="background-image: url(icons/line_spline_icon.png)"></button>
+        <button data-tooltip="Line-Blob" style="background-image: url(icons/line_blob_icon.png)"></button>
       </div>
 
       <div class="btnGroupH">
         <button>Text</button>
-        <button>Image</button>
-        <button>Arrow</button>
-        <button>Label</button>
+        <button data-tooltip="Image" style="background-image: url(icons/image_icon.png)"></button>
+        <button data-tooltip="Arrow" style="background-image: url(icons/arrow_icon.png)"></button>
+        <button data-tooltip="Label" style="background-image: url(icons/label_icon.png)"></button>
       </div>
 
       <div class="btnGroupH">
-        <button style="width: 33.3%">Star</button>
-        <button style="width: 33.3%">Ring</button>
-        <button style="width: 33.3%">Arc</button>
+        <button data-tooltip="Star" style="width: 33.3%; background-image: url(icons/star_icon.png)"></button>
+        <button data-tooltip="Ring" style="width: 33.3%; background-image: url(icons/ring_icon.png)"></button>
+        <button data-tooltip="Arc" style="width: 33.3%; background-image: url(icons/arc_icon.png)"></button>
       </div>
 
       <div class="btnGroupH">
-        <button style="width: 50%">Regular Polygon</button>
-        <button style="width: 50%">Custom Shape</button>
+        <button data-tooltip="Regular Polygon" style="width: 50%; background-image: url(icons/reg_polygon_icon.png)"></button>
+        <button data-tooltip="Custom Shape" style="width: 50%; background-image: url(icons/custom_icon.png)"></button>
       </div>
 
     </div>
@@ -143,6 +143,7 @@ layerDraw.add(triangle);
 
 // add the layer to the stage
 stageDraw.add(layerDraw);
+
 </script>
 
 </body>
