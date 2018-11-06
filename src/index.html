@@ -39,35 +39,35 @@
     <div class="btnGroupV">
 
       <div class="btnGroupH">
-        <button data-tooltip="Circle" style="background-image: url(icons/circle_icon.png)"></button>
-        <button data-tooltip="Rectangle" style="background-image: url(icons/rect_icon.png)"></button>
-        <button data-tooltip="Ellipse" style="background-image: url(icons/ellipse_icon.png)"></button>
-        <button data-tooltip="Wedge" style="background-image: url(icons/wedge_icon.png)"></button>
+        <button data-tooltip="Circle" onclick="setShape('circle')" style="background-image: url(icons/circle_icon.png)"></button>
+        <button data-tooltip="Rectangle" onclick="setShape('rectangle')" style="background-image: url(icons/rect_icon.png)"></button>
+        <button data-tooltip="Ellipse" onclick="setShape('ellipse')" style="background-image: url(icons/ellipse_icon.png)"></button>
+        <button data-tooltip="Wedge" onclick="setShape('wedge')" style="background-image: url(icons/wedge_icon.png)"></button>
       </div>
 
       <div class="btnGroupH">
-        <button data-tooltip="Line-Simple" style="background-image: url(icons/line_simple_icon.png)"></button>
-        <button data-tooltip="Line-Polygon" style="background-image: url(icons/line_polygon_icon.png)"></button>
-        <button data-tooltip="Line-Spline" style="background-image: url(icons/line_spline_icon.png)"></button>
-        <button data-tooltip="Line-Blob" style="background-image: url(icons/line_blob_icon.png)"></button>
+        <button data-tooltip="Line-Simple" onclick="setShape('line-simple')" style="background-image: url(icons/line_simple_icon.png)"></button>
+        <button data-tooltip="Line-Polygon" onclick="setShape('line-polygon')" style="background-image: url(icons/line_polygon_icon.png)"></button>
+        <button data-tooltip="Line-Spline" onclick="setShape('line-spline')" style="background-image: url(icons/line_spline_icon.png)"></button>
+        <button data-tooltip="Line-Blob" onclick="setShape('line-blob')" style="background-image: url(icons/line_blob_icon.png)"></button>
       </div>
 
       <div class="btnGroupH">
-        <button>Text</button>
-        <button data-tooltip="Image" style="background-image: url(icons/image_icon.png)"></button>
-        <button data-tooltip="Arrow" style="background-image: url(icons/arrow_icon.png)"></button>
-        <button data-tooltip="Label" style="background-image: url(icons/label_icon.png)"></button>
+        <button onclick="setShape('text')">Text</button>
+        <button data-tooltip="Image" onclick="setShape('image')" style="background-image: url(icons/image_icon.png)"></button>
+        <button data-tooltip="Arrow" onclick="setShape('arrow')" style="background-image: url(icons/arrow_icon.png)"></button>
+        <button data-tooltip="Label" onclick="setShape('label')" style="background-image: url(icons/label_icon.png)"></button>
       </div>
 
       <div class="btnGroupH">
-        <button data-tooltip="Star" style="width: 33.3%; background-image: url(icons/star_icon.png)"></button>
-        <button data-tooltip="Ring" style="width: 33.3%; background-image: url(icons/ring_icon.png)"></button>
-        <button data-tooltip="Arc" style="width: 33.3%; background-image: url(icons/arc_icon.png)"></button>
+        <button data-tooltip="Star" onclick="setShape('star')" style=" background-image: url(icons/star_icon.png)"></button>
+        <button data-tooltip="Ring" onclick="setShape('ring')" style=" background-image: url(icons/ring_icon.png)"></button>
+        <button data-tooltip="Arc" onclick="setShape('arc')" style=" background-image: url(icons/arc_icon.png)"></button>
       </div>
 
       <div class="btnGroupH">
-        <button data-tooltip="Regular Polygon" style="width: 50%; background-image: url(icons/reg_polygon_icon.png)"></button>
-        <button data-tooltip="Custom Shape" style="width: 50%; background-image: url(icons/custom_icon.png)"></button>
+        <button data-tooltip="Regular Polygon" onclick="setShape('regular-polygon')" style=" background-image: url(icons/reg_polygon_icon.png)"></button>
+        <button data-tooltip="Custom Shape" onclick="setShape('custom-shape')" style=" background-image: url(icons/custom_icon.png)"></button>
       </div>
 
     </div>
@@ -100,6 +100,9 @@ var stageDraw = new Konva.Stage({
     height: "1000"
 });
 
+var container = stageDraw.container();
+container.tabIndex = 1;
+
 var layerDraw = new Konva.Layer();
 
 /*
@@ -127,7 +130,7 @@ var rect = new Konva.Rect({
     y: 50,
     width: 100,
     height: 50,
-    fill: 'green',
+    fill: 'red',
     stroke: 'black',
     strokeWidth: 4
 });
@@ -143,6 +146,148 @@ layerDraw.add(triangle);
 
 // add the layer to the stage
 stageDraw.add(layerDraw);
+
+// On double click manipulate shape
+stageDraw.on('dblclick', function (e) {
+      // if click on empty area - remove all transformers
+      if (e.target === stageDraw) {
+        stageDraw.find('Transformer').destroy();
+        layerDraw.draw();
+        return;
+      }
+
+      // remove old transformers
+      // TODO: we can skip it if current shape is already selected
+      stageDraw.find('Transformer').destroy();
+
+      // create new transformer
+      var tr = new Konva.Transformer();
+      layerDraw.add(tr);
+      tr.attachTo(e.target);
+      selectedShape = e.target;
+      layerDraw.draw();
+    })
+
+// TODO: Create draggable for all
+stageDraw.on('click', function (e) {
+  // When single click, "destroy" all transformers and redraw
+  stageDraw.find('Transformer').destroy();
+  layerDraw.draw();
+
+  // Get the position of the mouse
+  var pointerPosition = stageDraw.getPointerPosition();
+
+  // When a certain button in the toolbar is clicked
+  // Click the canvas to add a new default shape
+  switch(GNextShape){
+    case "circle":
+      var newCircle = new Konva.Circle({
+        x: pointerPosition.x,
+        y: pointerPosition.y,
+        radius: 70,
+        fill: 'red',
+        stroke: 'black',
+        strokeWidth: 4
+      });
+      layerDraw.add(newCircle);
+      layerDraw.draw();
+      newCircle.draggable('true');
+      break;
+    case "rectangle":
+      var newRect = new Konva.Rect({
+          x: pointerPosition.x,
+          y: pointerPosition.y,
+          width: 100,
+          height: 50,
+          fill: 'green',
+          stroke: 'black',
+          strokeWidth: 4
+      });
+      layerDraw.add(newRect);
+      layerDraw.draw();
+      break;
+    case "ellipse":
+      var newOval = new Konva.Ellipse({
+        x: pointerPosition.x,
+        y: pointerPosition.y,
+        radius: {
+            x: 100,
+            y: 50
+        },
+        fill: 'yellow',
+        stroke: 'black',
+        strokeWidth: 4
+      });
+      layerDraw.add(newOval);
+      layerDraw.draw();
+      break;
+    case "wedge":
+      var newWedge = new Konva.Wedge({
+        x: pointerPosition.x,
+        y: pointerPosition.y,
+        radius: 70,
+        angle: 60,
+        fill: 'red',
+        stroke: 'black',
+        strokeWidth: 4,
+        rotation: -120
+      });
+      layerDraw.add(newWedge);
+      layerDraw.draw();
+      break;
+    case "line-simple":
+      break;
+    case "line-polygon":
+      break;
+    case "line-spline":
+      break;
+    case "line-blob":
+      break;
+    case "image":
+      var imageObj = new Image();
+      var newImage;
+      imageObj.src = 'icons/image_icon.png';
+      imageObj.onload = function() {
+        newImage = new Konva.Image({
+          x: pointerPosition.x,
+          y: pointerPosition.y,
+          image: imageObj,
+          width: 106,
+          height: 118
+        });
+        layerDraw.add(newImage);
+        layerDraw.draw();
+        newImage.draggable('true');
+      };
+      break;
+    case "arrow":
+      break;
+    case "label":
+      break;
+    case "star":
+      break;
+    case "ring":
+      break;
+    case "arc":
+      break;
+    case "regular-polygon":
+      break;
+    case "custom-shape":
+      break;
+    default:
+      break;
+  }
+  GNextShape="";
+});
+
+container.addEventListener('keydown', function (e) {
+  // Destroy selected shape and its transformer
+  if (e.keyCode === 8 || e.keyCode === 46) {
+    selectedShape.destroy();
+    stageDraw.find('Transformer').destroy();
+  }
+  layerDraw.draw();
+});
 
 </script>
 

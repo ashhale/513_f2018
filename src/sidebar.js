@@ -1,3 +1,8 @@
+// Global variables //
+// variable for next shape to be drawn on the canvas
+var GNextShape = "";
+var selectedShape;
+
 function openNav() {
     document.getElementById("mySidebar").style.width = "500px";
     document.getElementById("main").style.marginLeft = "500px";
@@ -32,4 +37,9 @@ function openTab(tabName, elmnt, color) {
 // Click on element (assumed to be a button) with id="defaultOpen"
 function clickDefaultButton() {
 document.getElementById("defaultOpen").click();
+}
+
+// Set GNextShape to draw
+function setShape(shape) {
+  GNextShape = shape;
 }
