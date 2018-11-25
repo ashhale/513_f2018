@@ -56,6 +56,22 @@ body {
     background-color: #444;
 }
 
+/* Style of Update Button mimcs colors of Toolbar buttons (btnGroupH)*/
+.updatebtn {
+    font-size: 20px;
+    cursor: pointer;
+    background-color: lightblue;
+    color: black;
+    padding: 10px 15px;
+    border: none;
+}
+
+/* Change background color of Update Button when hovered */
+.updatebtn:hover {
+/*     background-color: lightcyan; */
+    background-color: #3e8e41;
+}
+
 #main {
     transition: margin-left .5s;
     padding: 16px;

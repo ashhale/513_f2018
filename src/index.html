@@ -2,9 +2,10 @@
 <html>
 
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Draw a Webpage!</title>
-<link rel="stylesheet" href="sidebar.css">
+<link rel="stylesheet" href="sidebar.css" />
 <script src="https://cdn.rawgit.com/konvajs/konva/2.4.0/konva.min.js"></script>
 <script src="sidebar.js"></script>
 </head>
@@ -185,6 +186,7 @@ stageDraw.on('click', function (e) {
         stroke: 'black',
         strokeWidth: 4
       });
+      setShapeID(newCircle);
       layerDraw.add(newCircle);
       layerDraw.draw();
       newCircle.draggable('true');
@@ -199,6 +201,7 @@ stageDraw.on('click', function (e) {
           stroke: 'black',
           strokeWidth: 4
       });
+      setShapeID(newRect);
       layerDraw.add(newRect);
       layerDraw.draw();
       newRect.draggable('true');
@@ -215,6 +218,7 @@ stageDraw.on('click', function (e) {
         stroke: 'black',
         strokeWidth: 4
       });
+      setShapeID(newOval);
       layerDraw.add(newOval);
       layerDraw.draw();
       newOval.draggable('true');
@@ -230,6 +234,7 @@ stageDraw.on('click', function (e) {
         strokeWidth: 4,
         rotation: -120
       });
+      setShapeID(newWedge);
       layerDraw.add(newWedge);
       layerDraw.draw();
       newWedge.draggable('true');
@@ -246,6 +251,7 @@ stageDraw.on('click', function (e) {
         lineCap: 'round',
         lineJoin: 'round'
       });
+      setShapeID(newLine);
       layerDraw.add(newLine);
       layerDraw.draw();
       newLine.draggable('true');
@@ -262,6 +268,7 @@ stageDraw.on('click', function (e) {
           width: 106,
           height: 118
         });
+        setShapeID(newImage);
         layerDraw.add(newImage);
         layerDraw.draw();
         newImage.draggable('true');
