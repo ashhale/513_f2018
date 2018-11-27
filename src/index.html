@@ -77,6 +77,7 @@
 <!-- Menu Area -->
 <div id="main">
   <button class="openbtn" onclick="openNav()">Menu</button>
+  <button id="save" class="openbtn">Save</button>
   <p style="font-size: 25px">Click the Menu button to get started</p>
 
   <!-- Main drawing area -->
@@ -92,6 +93,65 @@ var stageDraw = new Konva.Stage({
     width: "1000",
     height: "1000"
 });
+
+// From https://konvajs.github.io/docs/data_and_serialization/Stage_Data_URL.html
+function downloadURI(uri, name) {
+    var link = document.createElement("a");
+    link.download = name;
+    link.href = uri;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    delete link;
+}
+
+// Based on https://konvajs.github.io/docs/data_and_serialization/Stage_Data_URL.html
+document.getElementById('save').addEventListener('click', function () {
+// The basic structure of the generated HTML looks like this:
+// <!DOCTYPE html>
+// <html>
+// <head>
+//     <meta charset="utf-8" />
+//     <title></title>
+//     <style>
+//         body {
+//           background-image:url(data:image/png;base64,iVBORwA<MoreBase64SringHere>); 
+//         }
+//     </style>
+// </head>
+// <body>
+// 
+// </body>
+// </html>
+
+    var prefixHTML =
+        "<!DOCTYPE html>\n" +
+        "<html>\n" +
+        "<head>\n" +
+        "    <meta charset=\"utf-8\" />\n" +
+        "    <title></title>\n" +
+        "    <style>\n" +
+        "        body {\n" +
+        "          background-image:url(";
+
+    var suffixHTML =
+        "          );\n" +
+        "        }\n" +
+        "    </style>\n" +
+        "</head>\n" +
+        "<body>\n" +
+        "\n" +
+        "</body>\n" +
+        "</html>\n";
+
+    // toDataURL() returns a base64 encoded URI something like:
+    //      data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA+...
+    // API reference: https://konvajs.github.io/api/Konva.Stage.html#toDataURL__anchor
+    var dataURL = stageDraw.toDataURL();
+//     console.log(dataURL);                   // TODO: Remove
+    downloadURI("data:text/html," + encodeURIComponent(prefixHTML) +
+                dataURL + encodeURIComponent(suffixHTML), 'stage.html');
+}, false);
 
 var container = stageDraw.container();
 container.tabIndex = 1;
