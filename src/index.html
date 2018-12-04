@@ -2,17 +2,31 @@
 <html>
 
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Draw a Webpage!</title>
-<link rel="stylesheet" href="sidebar.css" />
-<script src="https://cdn.rawgit.com/konvajs/konva/2.4.0/konva.min.js"></script>
-<script src="sidebar.js"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Draw a Webpage!</title>
+    <link rel="stylesheet" href="sidebar.css" />
+    <script src="https://cdn.rawgit.com/konvajs/konva/2.4.0/konva.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Colors.js/1.2.4/colors.min.js"></script>
+    <script src="sidebar.js"></script>
 </head>
 
-<body onload="clickDefaultButton()">
+<body>  <!-- onload="initApp()"> -->
+    <!-- 
+        Instead of onload since we just need the DOM model, no need to
+        wait for images or other resources to load
+     -->
+    <script>
+        document.addEventListener("DOMContentLoaded", initApp);
+    </script>
 
-<!-- Collapsable Sidebar -->
+<!-- 
+The <body> has two top-level DIVs - a sidebar on the left and the main
+drawing area on the right. The sidebar is collapsible and starts off
+collapsed.
+ -->
+ 
+<!-- Collapsible Sidebar -->
 <div id="mySidebar" class="sidebar">
   <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">[x]</a>
   <button class="tablink" onclick="openTab('About', this, 'red')" id="defaultOpen">About</button>
@@ -34,7 +48,7 @@
     <h1>Toolbar</h1>
     <p>Click on the object you want then click on the canvas</p>
     <p>A default version of the selected object will appear</p>
-    <p>You can change the properties of the object by selecting it then going to the Object Info tab</p>
+    <p>You can change the properties of the object by double-clicking it on the canvas</p>
 
     <div class="btnGroupV">
 
@@ -47,7 +61,7 @@
 
       <div class="btnGroupH">
         <button data-tooltip="Line" onclick="setShape('line')" style="background-image: url(icons/line_simple_icon.png)"></button>
-        <button onclick="setShape('text')">Text</button>
+        <button data-tooltip="Text" onclick="setShape('text')" style="background-image: url(icons/text_icon.png)"></button>
         <button data-tooltip="Label" onclick="setShape('label')" style="background-image: url(icons/label_icon.png)"></button>
         <button data-tooltip="Image" onclick="setShape('image')" style="background-image: url(icons/image_icon.png)"></button>
       </div>
@@ -68,16 +82,15 @@
   </div>
 
   <div id="Object Info" class="tabcontent">
-    <h1>Object Info</h1>
-    <p id="p1">Sorry nothing here yet!</p>
+    <!-- Default text is defined in sidebar.js -->
   </div>
 
 </div>
 
-<!-- Menu Area -->
+<!-- Main Area -->
 <div id="main">
   <button class="openbtn" onclick="openNav()">Menu</button>
-  <button id="save" class="openbtn">Save</button>
+  <button id="save" class="openbtn" onclick="generateHTML()">Save</button>
   <p style="font-size: 25px">Click the Menu button to get started</p>
 
   <!-- Main drawing area -->
@@ -85,293 +98,6 @@
       <p>Main Drawing Area</p>
   </div>
 </div>
-
-<!-- Script for main drawing area -->
-<script>
-var stageDraw = new Konva.Stage({
-    container: 'drawing',
-    width: "1000",
-    height: "1000"
-});
-
-// From https://konvajs.github.io/docs/data_and_serialization/Stage_Data_URL.html
-function downloadURI(uri, name) {
-    var link = document.createElement("a");
-    link.download = name;
-    link.href = uri;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    delete link;
-}
-
-// Based on https://konvajs.github.io/docs/data_and_serialization/Stage_Data_URL.html
-document.getElementById('save').addEventListener('click', function () {
-// The basic structure of the generated HTML looks like this:
-// <!DOCTYPE html>
-// <html>
-// <head>
-//     <meta charset="utf-8" />
-//     <title></title>
-//     <style>
-//         body {
-//           background-image:url(data:image/png;base64,iVBORwA<MoreBase64SringHere>); 
-//         }
-//     </style>
-// </head>
-// <body>
-// 
-// </body>
-// </html>
-
-    var prefixHTML =
-        "<!DOCTYPE html>\n" +
-        "<html>\n" +
-        "<head>\n" +
-        "    <meta charset=\"utf-8\" />\n" +
-        "    <title></title>\n" +
-        "    <style>\n" +
-        "        body {\n" +
-        "          background-image:url(";
-
-    var suffixHTML =
-        "          );\n" +
-        "        }\n" +
-        "    </style>\n" +
-        "</head>\n" +
-        "<body>\n" +
-        "\n" +
-        "</body>\n" +
-        "</html>\n";
-
-    // toDataURL() returns a base64 encoded URI something like:
-    //      data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA+...
-    // API reference: https://konvajs.github.io/api/Konva.Stage.html#toDataURL__anchor
-    var dataURL = stageDraw.toDataURL();
-//     console.log(dataURL);                   // TODO: Remove
-    downloadURI("data:text/html," + encodeURIComponent(prefixHTML) +
-                dataURL + encodeURIComponent(suffixHTML), 'stage.html');
-}, false);
-
-var container = stageDraw.container();
-container.tabIndex = 1;
-
-var layerDraw = new Konva.Layer();
-
-/*
-* create a triangle shape by defining a
-* drawing function which draws a triangle
-*/
-var triangle = new Konva.Shape({
-    sceneFunc: function (context, shape) {
-        context.beginPath();
-        context.moveTo(20, 50);
-        context.lineTo(220, 80);
-        context.quadraticCurveTo(150, 100, 260, 170);
-        context.closePath();
-
-        // (!) Konva specific method, it is very important
-        context.fillStrokeShape(shape);
-    },
-    fill: '#00D2FF',
-    stroke: 'black',
-    strokeWidth: 4
-});
-
-var rect = new Konva.Rect({
-    x: 50,
-    y: 50,
-    width: 100,
-    height: 50,
-    fill: 'red',
-    stroke: 'black',
-    strokeWidth: 0
-});
-
-// add the shape to the layer
-layerDraw.add(rect);
-
-triangle.draggable('true');
-rect.draggable('true');
-
-// add the triangle shape to the layer
-layerDraw.add(triangle);
-
-// add the layer to the stage
-stageDraw.add(layerDraw);
-
-// On double click manipulate shape
-stageDraw.on('dblclick', function (e) {
-      // if click on empty area - remove all transformers
-      if (e.target === stageDraw) {
-        stageDraw.find('Transformer').destroy();
-        layerDraw.draw();
-        return;
-      }
-
-      // remove old transformers
-      // TODO: we can skip it if current shape is already selected
-      stageDraw.find('Transformer').destroy();
-
-      // create new transformer
-      var tr = new Konva.Transformer();
-      layerDraw.add(tr);
-      tr.attachTo(e.target);
-      selectedShape = e.target;
-      layerDraw.draw();
-      setObjectInfo(selectedShape);
-      openNav();
-      openTab('Object Info', this, 'red');
-    })
-
-// TODO: Create draggable for all
-stageDraw.on('click', function (e) {
-  // When single click, "destroy" all transformers and redraw
-  stageDraw.find('Transformer').destroy();
-  layerDraw.draw();
-  closeNav();
-
-  // Get the position of the mouse
-  var pointerPosition = stageDraw.getPointerPosition();
-
-  // When a certain button in the toolbar is clicked
-  // Click the canvas to add a new default shape
-  switch(GNextShape){
-    case "circle":
-      var newCircle = new Konva.Circle({
-        x: pointerPosition.x,
-        y: pointerPosition.y,
-        radius: 70,
-        fill: 'red',
-        stroke: 'black',
-        strokeWidth: 4
-      });
-      setShapeID(newCircle);
-      layerDraw.add(newCircle);
-      layerDraw.draw();
-      newCircle.draggable('true');
-      break;
-    case "rectangle":
-      var newRect = new Konva.Rect({
-          x: pointerPosition.x,
-          y: pointerPosition.y,
-          width: 100,
-          height: 50,
-          fill: 'green',
-          stroke: 'black',
-          strokeWidth: 4
-      });
-      setShapeID(newRect);
-      layerDraw.add(newRect);
-      layerDraw.draw();
-      newRect.draggable('true');
-      break;
-    case "ellipse":
-      var newOval = new Konva.Ellipse({
-        x: pointerPosition.x,
-        y: pointerPosition.y,
-        radius: {
-            x: 100,
-            y: 50
-        },
-        fill: 'yellow',
-        stroke: 'black',
-        strokeWidth: 4
-      });
-      setShapeID(newOval);
-      layerDraw.add(newOval);
-      layerDraw.draw();
-      newOval.draggable('true');
-      break;
-    case "wedge":
-      var newWedge = new Konva.Wedge({
-        x: pointerPosition.x,
-        y: pointerPosition.y,
-        radius: 70,
-        angle: 60,
-        fill: 'red',
-        stroke: 'black',
-        strokeWidth: 4,
-        rotation: -120
-      });
-      setShapeID(newWedge);
-      layerDraw.add(newWedge);
-      layerDraw.draw();
-      newWedge.draggable('true');
-      break;
-    case "line":
-      var newLine = new Konva.Line({
-        // points = [x1, y1, x2, y2, x3, y3]
-        points: [pointerPosition.x+5, pointerPosition.y+70,
-          pointerPosition.x+140, pointerPosition.y+23,
-          pointerPosition.x+250, pointerPosition.y+60,
-          pointerPosition.x+300, pointerPosition.y+20],
-        stroke: 'red',
-        strokeWidth: 15,
-        lineCap: 'round',
-        lineJoin: 'round'
-      });
-      setShapeID(newLine);
-      layerDraw.add(newLine);
-      layerDraw.draw();
-      newLine.draggable('true');
-      break;
-    case "image":
-      var imageObj = new Image();
-      var newImage;
-      imageObj.src = 'icons/image_icon.png';
-      imageObj.onload = function() {
-        newImage = new Konva.Image({
-          x: pointerPosition.x,
-          y: pointerPosition.y,
-          image: imageObj,
-          width: 106,
-          height: 118
-        });
-        setShapeID(newImage);
-        layerDraw.add(newImage);
-        layerDraw.draw();
-        newImage.draggable('true');
-      };
-      break;
-    // TODO //
-    case "arrow":
-      alert("Arrow not implemented yet");
-      break;
-    case "text":
-      alert("Text not implemented yet");
-      break;
-    case "label":
-      alert("Label not implemented yet");
-      break;
-    case "star":
-      alert("Star not implemented yet");
-      break;
-    case "ring":
-      alert("Ring not implemented yet");
-      break;
-    case "arc":
-      alert("Arc not implemented yet");
-      break;
-    case "regular-polygon":
-      alert("Regular Polygon not implemented yet");
-      break;
-    default:
-      break;
-  }
-  GNextShape="";
-});
-
-container.addEventListener('keydown', function (e) {
-  // Destroy selected shape and its transformer
-  if (e.keyCode === 8 || e.keyCode === 46) {
-    selectedShape.destroy();
-    stageDraw.find('Transformer').destroy();
-  }
-  layerDraw.draw();
-});
-
-</script>
 
 </body>
 
