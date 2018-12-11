@@ -6,7 +6,7 @@ This file depends on:
 
     For the Konva.js HTML5 2d canvas library - see https://konvajs.github.io/
     <script src="https://cdn.rawgit.com/konvajs/konva/2.4.0/konva.min.js"></script>
-    
+
     For color conversion functions - see https://github.com/mbjordan/Colors
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Colors.js/1.2.4/colors.min.js"></script>
 
@@ -23,11 +23,55 @@ var layerDraw;          // The Konva Layer in the Stage - there is just one in t
 var GNextShape = "";    // The next shape to draw, selected from Toolbar
 var selectedShape;      // The currently selected Kona Shape
 var nextShapeID = 1;    // Next number to use for a unique ID for a Konva Shape
+var modal;              // The modal dialog to display error messages
+var defaultPageTitle =  // Default page title for generated HTML
+    "Working Title";
 var defaultObjectInfoHTML =     // Default text in the sidebar's Object Info tab
     "<h1>Object Info</h1>" +
-    "<p>Double-click an existing shape on the canvas to show its info here.<br>" +
+    "<p>Click a shape on the canvas to show its info here.<br>" +
     "To create a new shape, go to the Toolbar tab.</p>";
+var objInfoTable = "";  // To build up a table in the sidebar's Object Info tab
 var textarea = "";      // Text Area to edit text content of a Kona Text Shape
+// var crossOriginProxy =  // A CORS proxy service to access non-CORS images
+//     "https://crossorigin.me/"       // THIS IS PROBABLY A SECURITY HOLE 
+
+// All Images must be CORS-compliant, so an in-place data URI, or a remote
+// image from a properly configured web server, or provided interactively by the
+// user via a file dialog. For more info, see
+// https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
+
+// This fall-back image is internal, so it's always available and CORS-compliant
+// From https://icons8.com/icon/1393/image-file
+var fallbackImageSrc =
+"data:image/png;base64,\
+iVBORw0KGgoAAAANSUhEUgAAADQAAAA0CAYAAADFeBvrAAAAAXNSR0IArs4c6QAAAARnQU1B\
+AACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAMhSURBVGhD7dpJyE5RHMfxV6ZMkSFk\
+yKzMY1jJlAWSlY2FMmRh2EgWlBALWbERZSEbJcVCyFjYWCEpQxkjMs/z98d769/\
+p3uu99znnPDf51af3Vadzz8/zPs9z77m3oUCmYT/u4iN+\
+1uAbbmA5miFqOuMo0hbmw3l0R5R0w02kLcSnOxiM4DmBtAV8wIuS9OeWNudTDEewzIN70DMY\
+hVqiV+It3LlFpYYhSI7AHuw4fL2B9eFi57aeYAS85w2Sg/xAP/jKBtgSrucYB2/pAHuAe/\
+CZ9bDzp3mJ8fCSvrCTX4XPNKWQqNQE1JyqFBIvr1SVColKjUbpVK2QPEBvlEoVC4nW0RaFE7\
+rQOtj5i9iGwgldaAbs/\
+EV8RhcUSuhCygro7ONUitO4goew60jMQqHEKNTUTMRr2PXMQaGUKaRLjakIccZ8GHY9QQu1g\
+t6oX5GMv4SB8JWDsOsJWmgL7NjEbbSDj0QrpMvzL7BjrVXwkWiFJsOOc+\
+2Dj0Qr1B92nGsrfCTqeyhv32EI8tK88effErVQH1yDHf8ei5CXlVDp+b//lZ+\
+ohZTWWIZd2IgByIvOmlVGc2tjRB8ueYleqGg2wc6/HXmpdCG9b+\
+7Dzq8LuPbISqULzYWdO7EEWalboUno9efXzByDnTtxDlmJXkgbkHugse8wHWnR3l7WVvB36L\
+hpiV5oDez4VxgJN3thx7lWIy1RC+\
+nL8xPseNGmxiAkmYmsVydxEmmJWijrTEGeYXMju7WcRSe6HeEmWqFa9gayLISbaIUuw47z4Q\
+DcRCmU9X1Sq8dwE6XQRdgxPg2FTfBCPaB7RnaML/okdC87orxCY7EUujXv0xS4ifahECv/\
+C7n55wppM9xOcAv1zCHY9cxG4djzM+\
+2KdkK94j7NUupu3lnYSXajHlkMuw6dybdE4egj1E6k750daIMY0TWWbrno+\
+squQ9ddpdICegTMTib6H7qAtPs6vugRnEdwj61ype+\
+zKro1ogLuxPWgK9oFqDm68tSdhLSDxKJdIT1M5S1636zFdaQdMBRtd+\
+1EVwSLvqP0qunpjlDGoCcKPv3V0PAL/7SQI7ggoMAAAAAASUVORK5CYII=";
+
+
+var defaultImageSrc =   // Must be CORS-compliant remote image (or ask user via file dialog)
+//     fallbackImageSrc;
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/' + 
+    'Cc.logo.circle.svg/240px-Cc.logo.circle.svg.png';
+
 var defaultText =       // Default text in a new Text Shape
 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod \
 tempor incididunt ut labore et dolore magna aliqua. Lectus nulla at \
@@ -43,7 +87,9 @@ varius duis at consectetur lorem donec massa sapien. Vulputate sapien \
 nec sagittis aliquam. Congue mauris rhoncus aenean vel elit. Amet risus \
 nullam eget felis eget nunc lobortis mattis. Leo duis ut diam quam nulla \
 porttitor massa id neque. Vulputate sapien nec sagittis aliquam \
-malesuada. \
+malesuada.";
+// Additional Latin commented out in case it's needed later
+/* 
 \r\n\
 \r\n\
 Facilisis mauris sit amet massa vitae tortor. Neque ornare aenean \
@@ -60,7 +106,7 @@ vulputate enim nulla. Suscipit adipiscing bibendum est ultricies \
 integer. Consequat interdum varius sit amet mattis vulputate. Mauris \
 pellentesque pulvinar pellentesque habitant morbi tristique senectus et. \
 Volutpat sed cras ornare arcu dui vivamus. Duis tristique sollicitudin \
-nibh sit amet commodo. \
+nibh sit amet commodo.\
 \r\n\
 \r\n\
 Interdum velit laoreet id donec ultrices tincidunt arcu non. Convallis \
@@ -70,7 +116,7 @@ Tellus pellentesque eu tincidunt tortor aliquam nulla facilisi cras. \
 Cursus sit amet dictum sit amet. Neque viverra justo nec ultrices dui \
 sapien eget. Cursus vitae congue mauris rhoncus aenean vel elit \
 scelerisque mauris. Risus quis varius quam quisque id diam vel. \
-Adipiscing tristique risus nec feugiat in fermentum posuere urna. \
+Adipiscing tristique risus nec feugiat in fermentum posuere urna.\
 \r\n\
 \r\n\
 Id consectetur purus ut faucibus. Nisi scelerisque eu ultrices vitae. \
@@ -85,7 +131,7 @@ viverra mauris in aliquam sem fringilla. Lacus laoreet non curabitur \
 gravida arcu ac. Praesent tristique magna sit amet purus gravida. \
 Sagittis id consectetur purus ut faucibus pulvinar elementum integer. At \
 urna condimentum mattis pellentesque id nibh. Felis eget velit aliquet \
-sagittis id. \
+sagittis id.\
 \r\n\
 \r\n\
 Faucibus turpis in eu mi bibendum neque egestas. Eget nullam non nisi \
@@ -102,7 +148,8 @@ quis imperdiet massa tincidunt nunc. Aliquam id diam maecenas ultricies \
 mi. Congue mauris rhoncus aenean vel elit scelerisque mauris \
 pellentesque pulvinar. Faucibus turpis in eu mi bibendum neque egestas \
 congue quisque. Aliquam nulla facilisi cras fermentum odio eu feugiat \
-pretium nibh."
+pretium nibh.";
+ */
 
 /******************************************************************************
 Simple navigation button functions
@@ -163,46 +210,40 @@ function initApp() {
     // add a layer to the stage
     layerDraw = new Konva.Layer();
     stageDraw.add(layerDraw);
+    
+    // Establish a reference to the modal dialog for error messages
+    modal = document.getElementById('myModal');
 
     /**************************************************************************
     Event-handling functions for the Konva Stage and its Container.
     These are in initApp() since the Stage must be created first.
     **************************************************************************/
 
-    // On double click manipulate shape
-    stageDraw.on('dblclick', function (e) {
-          // if click on empty area - remove all transformers
-          if (e.target === stageDraw) {
-            stageDraw.find('Transformer').destroy();
-            layerDraw.draw();
-            return;
-          }
-
-          // remove old transformers
-          // TODO: we can skip it if current shape is already selected
-          stageDraw.find('Transformer').destroy();
-
-          // create new transformer
-          var tr = new Konva.Transformer();
-          layerDraw.add(tr);
-          selectedShape = e.target;
-          tr.attachTo(selectedShape);
-          layerDraw.draw();
-          getShapeAttributes(selectedShape);
-          openNav();
-          openTab('Object Info', this, 'red');
-        })
-
+    // Three cases on a single click:
+    // 1. User has not selected a "new Shape" tool from the sidebar's Toolbar,
+    //    and is clicking a blank area to deselect all Shapes
+    // 2. User has selected a "new Shape" tool and is placing the new Shape
+    // 3. User is selecting an existing Shape to examine/modify it
     stageDraw.on('click', function (e) {
-      // When single click, "destroy" all transformers and redraw
+      // If click on empty area and not creating a new shape, then remove all
+      // transformers, clear selectedShape, and clear Object Info tab
+      if (e.target === stageDraw && GNextShape == "") {
+        stageDraw.find('Transformer').destroy();
+        layerDraw.draw();
+        selectedShape = undefined;
+        clearObjectInfo();
+        return;
+      }
+
+      // At this point the user intends either to create a new shape
+      // or select an existing one.
+      // Destroy any existing Transformers
       stageDraw.find('Transformer').destroy();
-      layerDraw.draw();
 
       // Get the position of the mouse
       var pointerPosition = stageDraw.getPointerPosition();
 
-      // When a certain button in the toolbar is clicked
-      // Click the canvas to add a new default shape
+      // First see if the user is creating a new Shape
       var newShape;
       switch(GNextShape){
         case "circle":
@@ -211,8 +252,10 @@ function initApp() {
             y: pointerPosition.y,
             radius: 70,
             fill: $c.name2hex('red'),
+            fillEnabled: true,
             stroke: $c.name2hex('black'),
             strokeWidth: 4,
+            strokeEnabled: true,
             strokeScaleEnabled: false
           });
           break;
@@ -223,8 +266,10 @@ function initApp() {
               width: 100,
               height: 50,
               fill: $c.name2hex('green'),
+              fillEnabled: true,
               stroke: $c.name2hex('black'),
               strokeWidth: 4,
+              strokeEnabled: true,
               strokeScaleEnabled: false
           });
           break;
@@ -237,8 +282,10 @@ function initApp() {
                 y: 50
             },
             fill: $c.name2hex('yellow'),
+            fillEnabled: true,
             stroke: $c.name2hex('black'),
             strokeWidth: 4,
+            strokeEnabled: true,
             strokeScaleEnabled: false
           });
           break;
@@ -249,8 +296,10 @@ function initApp() {
             radius: 70,
             angle: 60,
             fill: $c.name2hex('red'),
+            fillEnabled: true,
             stroke: $c.name2hex('black'),
             strokeWidth: 4,
+            strokeEnabled: true,
             rotation: -120,
             strokeScaleEnabled: false
           });
@@ -264,6 +313,7 @@ function initApp() {
               pointerPosition.x+300, pointerPosition.y+20],
             stroke: $c.name2hex('red'),
             strokeWidth: 15,
+            strokeEnabled: true,
             lineCap: 'round',
             lineJoin: 'round',
             strokeScaleEnabled: false
@@ -271,18 +321,56 @@ function initApp() {
           break;
         case "image":
           var imageObj = new Image();
-          imageObj.src = 'icons/image_icon.png';
+          // To turn this HTML Image into a Data URI later in generateHTML(), as per
+          // https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
+          // Testing confirms this must be set before setting the HTML Image's src URL
+          imageObj.crossOrigin = "Anonymous";
+
+          newShape = new Konva.Image({
+            x: pointerPosition.x,
+            y: pointerPosition.y,
+            image: imageObj,
+            width: undefined,               // Take on dimensions of loaded HTML Image
+            height: undefined,
+            stroke: $c.name2hex('black'),
+            strokeWidth: 0,
+            strokeEnabled: false,
+            strokeScaleEnabled: false
+          });
+          finishNewShape(newShape);     // Call "early" to assign ID to Konva Image
+
+          // Whenever a new src URL is loaded, clear the Konva Image width/height
+          // so it will take on the width/height of the src image, then redraw.
+          imageObj.setAttribute('konvaImageID', newShape.id()); // Save ref to Konva Image
           imageObj.onload = function() {
-            newShape = new Konva.Image({
-              x: pointerPosition.x,
-              y: pointerPosition.y,
-              image: imageObj,
-              width: 140,
-              height: 154,
-              strokeScaleEnabled: false
-            });
-            finishNewShape(newShape);
+
+            // "this" is the HTML Image; locate parent Konva Image, clear its width/height
+            var konvaImage = stageDraw.findOne('#' + this.getAttribute('konvaImageID'));
+            konvaImage.height(undefined);
+            konvaImage.width(undefined);
+
+            layerDraw.draw();
+            if (konvaImage === selectedShape) {
+                // Update the width/height shown in the Object Info tab
+                getShapeAttributes(konvaImage);
+            }
+            this.setAttribute('prevSrc', this.src);
           };
+          
+          // Catch CORS Exceptions to tell user instead of it just going to console
+          imageObj.addEventListener('error', function (e) {
+            e.preventDefault(); // Prevent error from getting thrown
+            // Display the modal error message
+            modal.style.display = "block";
+            // Reload prior (hopefully working) image
+            this.src = this.getAttribute('prevSrc');
+          });
+          
+          // Setting the HTML Image's src URL will start the image loading
+          imageObj.setAttribute('prevSrc', fallbackImageSrc);
+          imageObj.src = defaultImageSrc;
+//           imageObj.src = crossOriginProxy + defaultImageSrc;
+//           imageObj.src = 'icons/image_icon.png';
           break;
         // TODO //
         case "arrow":
@@ -296,10 +384,13 @@ function initApp() {
               y: pointerPosition.y,
               width: 500,
               height: 300,
-              strokeScaleEnabled: false
-//               fill: $c.name2hex('green'),
-//               stroke: $c.name2hex('black'),
-//               strokeWidth: 4
+              fill: $c.name2hex('black'),
+              fillEnabled: true,
+              stroke: $c.name2hex('black'),
+              strokeWidth: 0,
+              strokeEnabled: false,
+              strokeScaleEnabled: false,
+              ellipsis: false
           });
           break;
         case "label":
@@ -322,23 +413,61 @@ function initApp() {
       }
 
       if (newShape) {
-          finishNewShape(newShape);
+          if (newShape.getClassName() !== "Image") {
+            // For Konva Image, already called finishNewShape above
+            finishNewShape(newShape);
+          }
+          GNextShape="";
+          selectedShape = newShape;
+      } else {
+          selectedShape = e.target;
       }
+      
+      // Finally, at this point the user has selected a Shape, whether
+      // pre-existing or just newly created.
 
-      GNextShape="";
-      clearObjectInfo();
+      // Create new transformer
+      var tr = new Konva.Transformer();
+      tr.rotationSnaps([0, 90, 180, 270]);  // Snap to 90-degree increments
+      if (selectedShape.getClassName() == "Text") {
+        // Disable rotation for Text shapes
+        // TODO Enable rotation for Text shapes when we can figure out the math
+        tr.rotateEnabled(false);
+      }
+      layerDraw.add(tr);
+      tr.attachTo(selectedShape);
+      layerDraw.draw();
+      getShapeAttributes(selectedShape);
+      openNav();
+      openTab('Object Info', this, 'red');
     });     // End stageDraw.on('click', ...)
 
+    // Keyboard event listener
     container.addEventListener('keydown', function (e) {
       // Destroy selected shape and its transformer
       if (e.keyCode === 8 || e.keyCode === 46) {
-        selectedShape.destroy();
         stageDraw.find('Transformer').destroy();
+        selectedShape.destroy();
+        selectedShape = undefined;
         clearObjectInfo();
       }
       layerDraw.draw();
     });
-}
+    
+    // 2 event listeners to close the modal error dialog
+    // When the user clicks on <span> (x), close the modal
+    document.getElementsByClassName("close")[0].onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+}   // function initApp()
 
 /******************************************************************************
 Functions to create and update Shapes
@@ -361,33 +490,74 @@ function finishNewShape(newShape) {
     // scales a shape, update it's width and height to the equivalent of scale 1.
     // From: https://github.com/konvajs/konva/issues/449#issuecomment-419374138
     newShape.on('transform', () => {
-    newShape.setAttrs({
-      width: newShape.width() * newShape.scaleX(),
-      height: newShape.height() * newShape.scaleY(),
-      scaleX: 1,
-      scaleY: 1
-    });
+        newShape.setAttrs({
+          width: newShape.width() * newShape.scaleX(),
+          height: newShape.height() * newShape.scaleY(),
+          scaleX: 1,
+          scaleY: 1
+        });
+        getShapeAttributes(newShape);
     })
 
-    // When a Transformer is done dragging, update the contents of the
+    // When a Transformer is done updating, update the contents of the
     // sidebar's Object Info tab
     newShape.on('transformend', function () {
+/* TODO Remove if can't get this "compensation" working
+      // Compensate for odd behavior of Konva Transformers that disappear if
+      // the mouse is not on Transformer on the transformend event
+      stageDraw.find('Transformer').destroy();
+      // Create new transformer
+      var tr = new Konva.Transformer();
+      tr.rotationSnaps([0, 90, 180, 270]);  // Snap to 90-degree increments
+      if (this.getClassName() == "Text") {
+        // Disable rotation for Text shapes
+        // TODO Enable rotation for Text shapes when we can figure out the math
+        tr.rotateEnabled(false);
+      }
+      layerDraw.add(tr);
+      tr.attachTo(this);
+      layerDraw.draw();
+ */
+
       getShapeAttributes(newShape);
+      stageDraw.find('Transformer').forceUpdate();
+      layerDraw.draw();
     });
 
+    // When starting to drag a Shape, move it to the top of the Z ordering
+    newShape.on("dragstart", function() {
+        this.moveToTop();
+//         layerDraw.draw();
+    });
+
+    // When done dragging a shape, update the contents of the Object Info tab
+    newShape.on('dragmove', function() {
+        getShapeAttributes(newShape);
+    });
+
+
+    // Set the pointer to clarify when a shape can be dragged
+    newShape.on('mouseover', function() {
+        document.body.style.cursor = 'pointer';
+    });
+    newShape.on('mouseout', function() {
+        document.body.style.cursor = 'default';
+    });
 
     setShapeID(newShape);
     layerDraw.add(newShape);
     layerDraw.draw();
-    newShape.draggable('true');
-}
+    newShape.draggable(true);
+}   // finishNewShape(newShape)
 
 // Get the attributes of the selected shape and show on the Object Info tab
 function getShapeAttributes(shape) {
   // When shape selected will change Object Info content to that shape's
   // specific attributes
   var isShapeValid = true;
-  document.getElementById("Object Info").innerHTML = "<h1>Object Info</h1>";
+  objInfoTable = "<h1>Object Info</h1>" +
+    "<p>Hold Alt while dragging a handle to transform from the center</p>" +
+    "<table class=\"objInfoTable\"><tbody>";
   switch(shape.getClassName()){
     case "Circle":
       createShapeAttributeString(shape, "ID (Make Unique): ", "id");
@@ -403,6 +573,7 @@ function getShapeAttributes(shape) {
       createShapeAttributeString(shape, "Fill Enabled (true/false): ", "fillEnabled", "checkbox");
       createShapeAttributeString(shape, "Shape Outline Color: ", "stroke", "color");
       createShapeAttributeString(shape, "Shape Outline Width: ", "strokeWidth", "number");
+      createShapeAttributeString(shape, "Shape Outline Enabled (true/false): ", "strokeEnabled", "checkbox");
       break;
     case "Rect":
       createShapeAttributeString(shape, "ID (Make Unique): ", "id");
@@ -417,6 +588,7 @@ function getShapeAttributes(shape) {
       createShapeAttributeString(shape, "Fill Enabled (true/false): ", "fillEnabled", "checkbox");
       createShapeAttributeString(shape, "Shape Outline Color: ", "stroke", "color");
       createShapeAttributeString(shape, "Shape Outline Width: ", "strokeWidth", "number");
+      createShapeAttributeString(shape, "Shape Outline Enabled (true/false): ", "strokeEnabled", "checkbox");
       break;
     case "Ellipse":
       createShapeAttributeString(shape, "ID (Make Unique): ", "id");
@@ -433,6 +605,7 @@ function getShapeAttributes(shape) {
       createShapeAttributeString(shape, "Fill Enabled (true/false): ", "fillEnabled", "checkbox");
       createShapeAttributeString(shape, "Shape Outline Color: ", "stroke", "color");
       createShapeAttributeString(shape, "Shape Outline Width: ", "strokeWidth", "number");
+      createShapeAttributeString(shape, "Shape Outline Enabled (true/false): ", "strokeEnabled", "checkbox");
       break;
     case "Wedge":
       createShapeAttributeString(shape, "ID (Make Unique): ", "id");
@@ -449,30 +622,32 @@ function getShapeAttributes(shape) {
       createShapeAttributeString(shape, "Fill Enabled (true/false): ", "fillEnabled", "checkbox");
       createShapeAttributeString(shape, "Shape Outline Color: ", "stroke", "color");
       createShapeAttributeString(shape, "Shape Outline Width: ", "strokeWidth", "number");
+      createShapeAttributeString(shape, "Shape Outline Enabled (true/false): ", "strokeEnabled", "checkbox");
       break;
     // TODO //
     case "Line":
       createShapeAttributeString(shape, "ID (Make Unique): ", "id");
       //createShapeAttributeString(shape, "X-Position (Left most point): ", "x", "number");
       //createShapeAttributeString(shape, "Y-Position (Left most point): ", "y", "number");
-      createShapeAttributeString(shape, "Points: ", "points", "number");
+      createShapeAttributeString(shape, "Points (x1, y1, x2, y2, etc.): ", "points");
       createShapeAttributeString(shape, "Line Join Point Shape (miter, round, or bevel): ", "lineJoin");
       createShapeAttributeString(shape, "Line End Shape (butt, round, or square): ", "lineCap");
 //       createShapeAttributeString(shape, "Scale-X: ", "scaleX", "number", "readonly");
 //       createShapeAttributeString(shape, "Scale-Y: ", "scaleY", "number", "readonly");
-      createShapeAttributeString(shape, "width: ", "width", "number", "readonly");
-      createShapeAttributeString(shape, "height: ", "height", "number", "readonly");
+      //createShapeAttributeString(shape, "width: ", "width", "number", "readonly");
+      //createShapeAttributeString(shape, "height: ", "height", "number", "readonly");
       createShapeAttributeString(shape, "Rotation (Degrees): ", "rotation", "number");
       //createShapeAttributeString(shape, "Fill Color: ", "fill", "color");
       //createShapeAttributeString(shape, "Fill Enabled (true/false): ", "fillEnabled", "checkbox");
       createShapeAttributeString(shape, "Line Color: ", "stroke", "color");
       createShapeAttributeString(shape, "Line Width: ", "strokeWidth", "number");
+      createShapeAttributeString(shape, "Line Width Enabled (true/false): ", "strokeEnabled", "checkbox");
       break;
     case "Image":
       createShapeAttributeString(shape, "ID (Make Unique): ", "id");
-      createShapeAttributeString(shape, "Image File Name: ", "image");
-      createShapeAttributeString(shape, "X-Position (Center of Image): ", "x", "number");
-      createShapeAttributeString(shape, "Y-Position (Center of Image): ", "y", "number");
+      createShapeAttributeString(shape, "Image URL: ", "image");
+      createShapeAttributeString(shape, "X-Position: ", "x", "number");
+      createShapeAttributeString(shape, "Y-Position: ", "y", "number");
 //       createShapeAttributeString(shape, "Scale-X: ", "scaleX", "number", "readonly");
 //       createShapeAttributeString(shape, "Scale-Y: ", "scaleY", "number", "readonly");
       createShapeAttributeString(shape, "width: ", "width", "number");
@@ -480,6 +655,7 @@ function getShapeAttributes(shape) {
       createShapeAttributeString(shape, "Rotation (Degrees): ", "rotation", "number");
       createShapeAttributeString(shape, "Shape Outline Color: ", "stroke", "color");
       createShapeAttributeString(shape, "Shape Outline Width: ", "strokeWidth", "number");
+      createShapeAttributeString(shape, "Shape Outline Enabled (true/false): ", "strokeEnabled", "checkbox");
       break;
     case "Arrow":
       isShapeValid = false;
@@ -493,10 +669,11 @@ function getShapeAttributes(shape) {
       createShapeAttributeString(shape, "width: ", "width", "number");
       createShapeAttributeString(shape, "height: ", "height", "number");
       createShapeAttributeString(shape, "Rotation (Degrees): ", "rotation", "number");
-      createShapeAttributeString(shape, "Fill Color: ", "fill", "color");
+      createShapeAttributeString(shape, "Text Color: ", "fill", "color");
       createShapeAttributeString(shape, "Fill Enabled (true/false): ", "fillEnabled", "checkbox");
-      createShapeAttributeString(shape, "Shape Outline Color: ", "stroke", "color");
-      createShapeAttributeString(shape, "Shape Outline Width: ", "strokeWidth", "number");
+      createShapeAttributeString(shape, "Text Outline Color: ", "stroke", "color");
+      createShapeAttributeString(shape, "Text Outline Width: ", "strokeWidth", "number");
+      createShapeAttributeString(shape, "Text Outline Enabled (true/false): ", "strokeEnabled", "checkbox");
       createShapeAttributeString(shape, "Font Family (Arial, Times, etc.): ", "fontFamily");
       createShapeAttributeString(shape, "Font Size: ", "fontSize");
       createShapeAttributeString(shape, "Font Style (normal, italic, bold): ", "fontStyle");
@@ -507,19 +684,7 @@ function getShapeAttributes(shape) {
       createShapeAttributeString(shape, "Line Height (1, 2, ...): ", "lineHeight", "number");
       createShapeAttributeString(shape, "Wrap (word, char, none): ", "wrap");
       createShapeAttributeString(shape, "Ellipsis (true/false): ", "ellipsis", "checkbox");
-      // Special handling for a text edit box
-        textarea = document.createElement('textarea');
-        textarea.value = shape.getAttr("text");
-//         textarea.style.position = 'absolute';
-//         textarea.style.top = areaPosition.y + 'px';
-//         textarea.style.left = areaPosition.x + 'px';
-        textarea.style.width = "400px";
-        textarea.setAttribute("id", shape.id() + "textarea");
-
-        document.getElementById("Object Info").insertAdjacentHTML('beforeend', "Text:<br><br>");
-        document.getElementById("Object Info").appendChild(textarea);
-        document.getElementById("Object Info").insertAdjacentHTML('beforeend', "<br>");
-        document.getElementById("Object Info").insertAdjacentHTML('beforeend', "<br>");
+      // Special handling for a text edit box below
       break;
     case "Label":
       isShapeValid = false;
@@ -541,14 +706,40 @@ function getShapeAttributes(shape) {
       alert("Shape not valid");
       break;
   }
-  
-  // If a valid shape was found, add the Update button, too.
+
+  // If a valid shape was found, update the Object Info tab with the
+  // <table> with editing widgets, a place to edit Text objects,
+  // an Update button, etc.
   if (isShapeValid) {
+    objInfoTable += "</tbody></table><br>";
+    var objInfo = document.getElementById("Object Info");
+    objInfo.innerHTML = objInfoTable;
+    if (shape.getClassName() == "Text") {
+        // Special handling for a text edit box
+        textarea = document.createElement('textarea');
+        textarea.value = shape.getAttr("text");
+        textarea.style.width = "400px";
+        textarea.setAttribute("id", shape.id() + "textarea");
+
+        objInfo.insertAdjacentHTML('beforeend', "Text:<br>");
+        objInfo.appendChild(textarea);
+        objInfo.insertAdjacentHTML('beforeend', "<br>");
+        objInfo.insertAdjacentHTML('beforeend', "<br>");
+    }
+    // Convert selected local image filename to URL and place it in URL edit box
+    // Based on an idea at https://stackoverflow.com/a/21790019
+    if (shape.getClassName() == "Image") {
+        document.getElementById("fileInput").onchange = function(e) {
+            var URL = window.webkitURL || window.URL;
+            var url = URL.createObjectURL(e.target.files[0]);
+            document.getElementById(shape.id() + "image").setAttribute("value", url);
+        };
+    }
     var btn = document.createElement("BUTTON");
     btn.setAttribute("class", "updatebtn");
     var t = document.createTextNode("Update");
     btn.appendChild(t);
-    document.getElementById("Object Info").appendChild(btn);
+    objInfo.appendChild(btn);
     btn.onclick = function() {
       setSelectedShapeAttributes(shape);
     };
@@ -563,21 +754,52 @@ function getShapeAttributes(shape) {
 // See https://www.w3schools.com/tags/att_input_type.asp
 // Note that for "color" the color value should be in hex format, not a color name.
 // If readonly is true then the <input> will be readonly.
+//
+// Format overall Object Info tab content as a table.
+// createShapeAttributeString writes one row, with surrounding <table> text
+// supplied by caller. Potential layout:
+// <table class="objInfoTable">
+//     <tr>
+//         <td class="leftCol">label</td>
+//         <td class="rightCol">input text/checkbox/etc.</td>
+//     </tr>
+//     ...
+// </table>
+
 function createShapeAttributeString(shape, string, value, inputType, readonly) {
   if (inputType === undefined) {
     inputType = "text";
   }
   var tempBox = document.createElement('INPUT');
   tempBox.setAttribute("type", inputType);
-  tempBox.setAttribute("value", shape.getAttr(value));
+  if (inputType === "checkbox") {
+    tempBox.setAttribute("checked", "checked");
+    if (shape.getAttr(value) == "false"
+        || shape.getAttr(value) == false) {
+      tempBox.removeAttribute("checked");   // Work around String vs. Boolean issue
+    }
+  } else {
+    tempBox.setAttribute("value", shape.getAttr(value));
+    if (value == "image") {
+      tempBox.setAttribute("value", shape.getImage().src);
+    }
+  }
   tempBox.setAttribute("id", shape.id() + value);
   if (readonly) {
     tempBox.setAttribute("readonly", "true");
   }
-  document.getElementById("Object Info").insertAdjacentHTML('beforeend', string);
-  document.getElementById("Object Info").appendChild(tempBox);
-  document.getElementById("Object Info").insertAdjacentHTML('beforeend', "<br>");
-  document.getElementById("Object Info").insertAdjacentHTML('beforeend', "<br>");
+
+  var rowPrefix = "<tr><td class=\"leftCol\">";
+  var rowMiddle = "</td><td class=\"rightCol\">";
+  var rowSuffix = "</td></tr>"
+  objInfoTable += rowPrefix + string + rowMiddle + tempBox.outerHTML + rowSuffix;
+  
+  // For Images, add an extra button to allow selecting a local image file
+  if (value == "image") {
+      objInfoTable += rowPrefix + "Use a local image file: " + rowMiddle +
+      "<input type=\"file\" id=\"fileInput\">"
+      + rowSuffix;
+  }
 }
 
 // Add a unique ID to a shape; If shape already has an ID, do nothing.
@@ -609,96 +831,97 @@ function setSelectedShapeAttributes(shape) {
       shape.setAttr("rotation", +(document.getElementById(shape.id() + "rotation").value));
       shape.setAttr("radius", +(document.getElementById(shape.id() + "radius").value));
       shape.setAttr("fill", document.getElementById(shape.id() + "fill").value);
-      shape.setAttr("fillEnabled", document.getElementById(shape.id() + "fillEnabled").value);
+      // fillEnabled is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("fillEnabled", document.getElementById(shape.id() + "fillEnabled").checked);
       shape.setAttr("stroke", document.getElementById(shape.id() + "stroke").value);
       shape.setAttr("strokeWidth", +(document.getElementById(shape.id() + "strokeWidth").value));
+      // strokeEnabled is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("strokeEnabled", document.getElementById(shape.id() + "strokeEnabled").checked);
       break;
     case "Rect":
-/* 
-      createShapeAttributeString("ID (Make Unique): ", "id");
-      createShapeAttributeString("X-Position: ", "x");
-      createShapeAttributeString("Y-Position: ", "y");
-//       createShapeAttributeString("Scale-X: ", "scaleX");
-//       createShapeAttributeString("Scale-Y: ", "scaleY");
-      createShapeAttributeString("width: ", "width");
-      createShapeAttributeString("height: ", "height");
-      createShapeAttributeString("Rotation (Degrees): ", "rotation");
-      createShapeAttributeString("Fill Color: ", "fill");
-      createShapeAttributeString("Fill Enabled (true/false): ", "fillEnabled");
-      createShapeAttributeString("Shape Outline Color: ", "stroke");
-      createShapeAttributeString("Shape Outline Width: ", "strokeWidth");
- */
+      shape.setAttr("id", document.getElementById(shape.id() + "id").value);
+      shape.setAttr("x", +(document.getElementById(shape.id() + "x").value));
+      shape.setAttr("y", +(document.getElementById(shape.id() + "y").value));
+      //       shape.setAttr("scaleX", +(document.getElementById(shape.id() + "scaleX").value));
+      //       shape.setAttr("scaleY", +(document.getElementById(shape.id() + "scaleY").value));
+      shape.setAttr("width", +(document.getElementById(shape.id() + "width").value));
+      shape.setAttr("height", +(document.getElementById(shape.id() + "height").value));
+      shape.setAttr("rotation", +(document.getElementById(shape.id() + "rotation").value));
+      shape.setAttr("fill", document.getElementById(shape.id() + "fill").value);
+      // fillEnabled is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("fillEnabled", document.getElementById(shape.id() + "fillEnabled").checked);
+      shape.setAttr("stroke", document.getElementById(shape.id() + "stroke").value);
+      shape.setAttr("strokeWidth", +(document.getElementById(shape.id() + "strokeWidth").value));
+      // strokeEnabled is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("strokeEnabled", document.getElementById(shape.id() + "strokeEnabled").checked);
       break;
     case "Ellipse":
-/* 
-      createShapeAttributeString("ID (Make Unique): ", "id");
-      createShapeAttributeString("X-Position (Center of Circle): ", "x");
-      createShapeAttributeString("Y-Position (Center of Circle): ", "y");
-//       createShapeAttributeString("Scale-X: ", "scaleX");
-//       createShapeAttributeString("Scale-Y: ", "scaleY");
-      createShapeAttributeString("width: ", "width");
-      createShapeAttributeString("height: ", "height");
-      createShapeAttributeString("Rotation (Degrees): ", "rotation");
-      createShapeAttributeString("Radius X (Pixels): ", "radiusX");
-      createShapeAttributeString("Radius Y (Pixels): ", "radiusY");
-      createShapeAttributeString("Fill Color: ", "fill");
-      createShapeAttributeString("Fill Enabled (true/false): ", "fillEnabled");
-      createShapeAttributeString("Shape Outline Color: ", "stroke");
-      createShapeAttributeString("Shape Outline Width: ", "strokeWidth");
- */
+      shape.setAttr("id", document.getElementById(shape.id() + "id").value);
+      shape.setAttr("x", +(document.getElementById(shape.id() + "x").value));
+      shape.setAttr("y", +(document.getElementById(shape.id() + "y").value));
+      //       shape.setAttr("scaleX", +(document.getElementById(shape.id() + "scaleX").value));
+      //       shape.setAttr("scaleY", +(document.getElementById(shape.id() + "scaleY").value));
+      shape.setAttr("width", +(document.getElementById(shape.id() + "width").value));
+      shape.setAttr("height", +(document.getElementById(shape.id() + "height").value));
+      shape.setAttr("rotation", +(document.getElementById(shape.id() + "rotation").value));
+      shape.setAttr("radiusX", +(document.getElementById(shape.id() + "radiusX").value));
+      shape.setAttr("radiusY", +(document.getElementById(shape.id() + "radiusY").value));
+      shape.setAttr("fill", document.getElementById(shape.id() + "fill").value);
+      // fillEnabled is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("fillEnabled", document.getElementById(shape.id() + "fillEnabled").checked);
+      shape.setAttr("stroke", document.getElementById(shape.id() + "stroke").value);
+      shape.setAttr("strokeWidth", +(document.getElementById(shape.id() + "strokeWidth").value));
+      // strokeEnabled is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("strokeEnabled", document.getElementById(shape.id() + "strokeEnabled").checked);
       break;
     case "Wedge":
-/* 
-      createShapeAttributeString("ID (Make Unique): ", "id");
-      createShapeAttributeString("X-Position (Center of Ellipse): ", "x");
-      createShapeAttributeString("Y-Position (Center of Ellipse): ", "y");
-//       createShapeAttributeString("Scale-X: ", "scaleX");
-//       createShapeAttributeString("Scale-Y: ", "scaleY");
-      createShapeAttributeString("width: ", "width");
-      createShapeAttributeString("height: ", "height");
-      createShapeAttributeString("Rotation (Degrees): ", "rotation");
-      createShapeAttributeString("Angle (Degrees): ", "angle");
-      createShapeAttributeString("Radius (Pixels): ", "radius");
-      createShapeAttributeString("Fill Color: ", "fill");
-      createShapeAttributeString("Fill Enabled (true/false): ", "fillEnabled");
-      createShapeAttributeString("Shape Outline Color: ", "stroke");
-      createShapeAttributeString("Shape Outline Width: ", "strokeWidth");
- */
+      shape.setAttr("id", document.getElementById(shape.id() + "id").value);
+      shape.setAttr("x", +(document.getElementById(shape.id() + "x").value));
+      shape.setAttr("y", +(document.getElementById(shape.id() + "y").value));
+      //       shape.setAttr("scaleX", +(document.getElementById(shape.id() + "scaleX").value));
+      //       shape.setAttr("scaleY", +(document.getElementById(shape.id() + "scaleY").value));
+      shape.setAttr("width", +(document.getElementById(shape.id() + "width").value));
+      shape.setAttr("height", +(document.getElementById(shape.id() + "height").value));
+      shape.setAttr("rotation", +(document.getElementById(shape.id() + "rotation").value));
+      shape.setAttr("angle", +(document.getElementById(shape.id() + "angle").value));
+      shape.setAttr("radius", +(document.getElementById(shape.id() + "radius").value));
+      shape.setAttr("fill", document.getElementById(shape.id() + "fill").value);
+      // fillEnabled is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("fillEnabled", document.getElementById(shape.id() + "fillEnabled").checked);
+      shape.setAttr("stroke", document.getElementById(shape.id() + "stroke").value);
+      shape.setAttr("strokeWidth", +(document.getElementById(shape.id() + "strokeWidth").value));
+      // strokeEnabled is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("strokeEnabled", document.getElementById(shape.id() + "strokeEnabled").checked);
       break;
     // TODO //
     case "Line":
-/* 
-      createShapeAttributeString("ID (Make Unique): ", "id");
-      //createShapeAttributeString("X-Position (Left most point): ", "x");
-      //createShapeAttributeString("Y-Position (Left most point): ", "y");
-      createShapeAttributeString("Points: ", "points");
-      createShapeAttributeString("Line Join Point Shape (miter, round, or bevel): ", "lineJoin");
-      createShapeAttributeString("Line End Shape (butt, round, or square): ", "lineCap");
-//       createShapeAttributeString("Scale-X: ", "scaleX");
-//       createShapeAttributeString("Scale-Y: ", "scaleY");
-      createShapeAttributeString("width: ", "width");
-      createShapeAttributeString("height: ", "height");
-      createShapeAttributeString("Rotation (Degrees): ", "rotation");
-      //createShapeAttributeString("Fill Color: ", "fill");
-      //createShapeAttributeString("Fill Enabled (true/false): ", "fillEnabled");
-      createShapeAttributeString("Line Color: ", "stroke");
-      createShapeAttributeString("Line Width: ", "strokeWidth");
- */
+      shape.setAttr("id", document.getElementById(shape.id() + "id").value);
+      shape.points(document.getElementById(shape.id() + "points").value.split(",").map(Number));
+      shape.setAttr("lineJoin", document.getElementById(shape.id() + "lineJoin").value);
+      shape.setAttr("lineCap", document.getElementById(shape.id() + "lineCap").value);
+      //shape.setAttr("width", +(document.getElementById(shape.id() + "width").value));
+      //shape.setAttr("height", +(document.getElementById(shape.id() + "height").value));
+      shape.setAttr("rotation", +(document.getElementById(shape.id() + "rotation").value));
+      shape.setAttr("stroke", document.getElementById(shape.id() + "stroke").value);
+      shape.setAttr("strokeWidth", +(document.getElementById(shape.id() + "strokeWidth").value));
+      // strokeEnabled is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("strokeEnabled", document.getElementById(shape.id() + "strokeEnabled").checked);
       break;
     case "Image":
-/* 
-      createShapeAttributeString("ID (Make Unique): ", "id");
-      createShapeAttributeString("Image File Name: ", "image");
-      createShapeAttributeString("X-Position (Center of Image): ", "x");
-      createShapeAttributeString("Y-Position (Center of Image): ", "y");
-//       createShapeAttributeString("Scale-X: ", "scaleX");
-//       createShapeAttributeString("Scale-Y: ", "scaleY");
-      createShapeAttributeString("width: ", "width");
-      createShapeAttributeString("height: ", "height");
-      createShapeAttributeString("Rotation (Degrees): ", "rotation");
-      createShapeAttributeString("Shape Outline Color: ", "stroke");
-      createShapeAttributeString("Shape Outline Width: ", "strokeWidth");
- */
+      shape.setAttr("id", document.getElementById(shape.id() + "id").value);
+      //shape.setAttr("image", document.getElementById(shape.id() + "image").value);
+      shape.getImage().src = document.getElementById(shape.id() + "image").value;
+      shape.setAttr("x", +(document.getElementById(shape.id() + "x").value));
+      shape.setAttr("y", +(document.getElementById(shape.id() + "y").value));
+      //       shape.setAttr("scaleX", +(document.getElementById(shape.id() + "scaleX").value));
+      //       shape.setAttr("scaleY", +(document.getElementById(shape.id() + "scaleY").value));
+      shape.setAttr("width", +(document.getElementById(shape.id() + "width").value));
+      shape.setAttr("height", +(document.getElementById(shape.id() + "height").value));
+      shape.setAttr("rotation", +(document.getElementById(shape.id() + "rotation").value));
+      shape.setAttr("stroke", document.getElementById(shape.id() + "stroke").value);
+      shape.setAttr("strokeWidth", +(document.getElementById(shape.id() + "strokeWidth").value));
+      // strokeEnabled is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("strokeEnabled", document.getElementById(shape.id() + "strokeEnabled").checked);
       break;
     case "Arrow":
       isShapeValid = false;
@@ -711,11 +934,16 @@ function setSelectedShapeAttributes(shape) {
 //       shape.setAttr("scaleY", +(document.getElementById(shape.id() + "scaleY").value));
       shape.setAttr("width", +(document.getElementById(shape.id() + "width").value));
       shape.setAttr("height", +(document.getElementById(shape.id() + "height").value));
+      shape.width(+(document.getElementById(shape.id() + "width").value));
+      shape.height(+(document.getElementById(shape.id() + "height").value));
       shape.setAttr("rotation", +(document.getElementById(shape.id() + "rotation").value));
       shape.setAttr("fill", document.getElementById(shape.id() + "fill").value);
-      shape.setAttr("fillEnabled", document.getElementById(shape.id() + "fillEnabled").value);
+      // fillEnabled is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("fillEnabled", document.getElementById(shape.id() + "fillEnabled").checked);
       shape.setAttr("stroke", document.getElementById(shape.id() + "stroke").value);
       shape.setAttr("strokeWidth", +(document.getElementById(shape.id() + "strokeWidth").value));
+      // strokeEnabled is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("strokeEnabled", document.getElementById(shape.id() + "strokeEnabled").checked);
       shape.setAttr("fontFamily", document.getElementById(shape.id() + "fontFamily").value);
       shape.setAttr("fontSize", +(document.getElementById(shape.id() + "fontSize").value));
       shape.setAttr("fontStyle", document.getElementById(shape.id() + "fontStyle").value);
@@ -725,8 +953,8 @@ function setSelectedShapeAttributes(shape) {
       shape.setAttr("padding", +(document.getElementById(shape.id() + "padding").value));
       shape.setAttr("lineHeight", +(document.getElementById(shape.id() + "lineHeight").value));
       shape.setAttr("wrap", document.getElementById(shape.id() + "wrap").value);
-//TODO Bug: Ellipsis is not saving properly
-      shape.setAttr("ellipsis", document.getElementById(shape.id() + "ellipsis").value);
+      // ellipsis is a checkbox so must use "checked" instead of "value"
+      shape.setAttr("ellipsis", document.getElementById(shape.id() + "ellipsis").checked);
       shape.setAttr("text", document.getElementById(shape.id() + "textarea").value);
       break;
     case "Label":
@@ -755,13 +983,13 @@ function setSelectedShapeAttributes(shape) {
     stageDraw.find('Transformer').forceUpdate();      // Fit Transformer to updated shape
     layerDraw.draw();
   }
-}
+}   // setSelectedShapeAttributes(shape)
 
 /******************************************************************************
 Functions to generate HTML and to make it downloadable
 ******************************************************************************/
 
-/* 
+/*
 Based on https://konvajs.github.io/docs/data_and_serialization/Stage_Data_URL.html
 The basic structure of the generated HTML looks like this:
 
@@ -786,7 +1014,7 @@ function generateHTML() {
         "<html>\n" +
         "<head>\n" +
         "    <meta charset=\"utf-8\" />\n" +
-        "    <title></title>\n" +
+        "    <title>" + defaultPageTitle + "</title>\n" +
         "    <style>\n"
     );
 
@@ -806,14 +1034,15 @@ function generateHTML() {
 
     var styles = "";        // Collect content for <style> section in <head>
     var bodyHTML = "";      // Collect Text and image data for <body>
-    
+
     // Internally, Konva appears to treat Transformers as shapes, so remove any
     // before collecting and converting shapes to bodyHTML. Since this also
     // makes it appear no Shape is selected, clear the Object Info tab.
     stageDraw.find('Transformer').destroy();
     layerDraw.draw();
+    selectedShape = undefined;
     clearObjectInfo();
-    
+
     // Purely for style reasons, let's process Text Shapes first
     var shapes = stageDraw.find('Text');
     var numTexts = shapes.length;
@@ -824,11 +1053,16 @@ function generateHTML() {
         var ParaID = shape.getAttr("id") + "Para";
         bodyHTML += encodeURIComponent(
             "    <div id=\"" + shape.getAttr("id") + "\">\n" +
-            "        <p id=\"" + ParaID + "\">" + shape.getAttr("text") + "</p>\n" +
+            "        <p id=\"" + ParaID + "\">" +
+                        shape.getAttr("text")
+                            .replace(/\r\n/g, "<br>")   // Replace \r\n pairs, then
+                            .replace(/\n/g, "<br>") +   // replace remaining single \n's
+                    "</p>\n" +
             "    </div>\n"
         );
-        
+
         // CSS positioning and other style attributes
+
         // https://www.w3schools.com/css/css_font.asp
         // https://www.w3schools.com/css/css_align.asp
         // https://www.w3schools.com/css/css_padding.asp
@@ -836,39 +1070,66 @@ function generateHTML() {
         // https://www.w3schools.com/cssref/css3_pr_word-break.asp
         // https://www.w3schools.com/cssref/css3_pr_text-overflow.asp
         // https://www.w3schools.com/cssref/css3_pr_transform.asp
+        // https://www.w3schools.com/cssref/pr_pos_overflow.asp
         // https://css-tricks.com/almanac/properties/t/text-overflow/
-        var wrap =  "            word-wrap: normal;\n";
-        var paraWrap = "";
-        if (shape.getAttr("wrap") == "char") {
-            wrap =  "            word-wrap: break-word;\n"
-        } else if (shape.getAttr("wrap") == "none") {
-            wrap =  "            white-space: nowrap;\n";
-            paraWrap =
-                    "        #" + ParaID + " {\n" +
-                    "            overflow: auto;\n";
-//TODO Debug console.log("ellipsis is " + shape.getAttr("ellipsis"));
-            if (shape.getAttr("ellipsis")) {
-//TODO Debug console.log("went to true");
-                paraWrap +=
-                    "            text-overflow: ellipsis;\n";
-            } else {
-//TODO Debug console.log("went to false");
-                paraWrap +=
+
+        // Some attributes must be applied to the <p> instead of the
+        // surrounding <div>.
+        // The mapping between Konva wrap/scroll/etc. behavior and CSS
+        // behaviors is not perfect.
+        // Start with default values that match Konva, not necessarily CSS.
+
+        var wordwrap =                                      // CSS default is normal
+                    "            word-wrap: normal;\n";
+        var whitespace =                                    // CSS default is normal
+                    "            white-space: normal;\n";
+        var overflow =                                      // CSS default is visible
+                    "            overflow: hidden;\n";
+        var textoverflow =                                  // CSS default is clip
                     "            text-overflow: clip;\n";
+        var wordbreak =                                     // CSS default is normal
+                    "            word-break: normal;\n";
+
+        // "Translate" Konva Text attributes as well as possible to CSS
+        // if (shape.getAttr("wrap") == "char") then use values above
+        if (shape.getAttr("wrap") == "char") {
+            wordwrap =
+                    "            word-wrap: break-word;\n"
+            wordbreak =
+                    "            word-break: break-all;\n";
+        } else if (shape.getAttr("wrap") == "none") {
+            whitespace =
+                    "            white-space: nowrap;\n";
+            if (shape.getAttr("ellipsis")) {
+                overflow =
+                    "            overflow: hidden;\n";      //TODO ???
+                textoverflow =
+                    "            text-overflow: ellipsis;\n";
             }
-            paraWrap +=
-                    "        }\n";
         }
-        // TODO fill, fillEnabled, strokeWidth
+
+        var paraCSS =
+                    "        #" + ParaID + " {\n" +
+                    "            margin-top: 0;\n" +
+                    wordwrap + whitespace + overflow + textoverflow + wordbreak +
+                    "        }\n";
+
+        // Get left/x and top/y position of Text, including any transforms
+        var boundingRect = shape.getClientRect();
+
+        // TODO Text color is fill/fillEnabled, Text outline is stroke/strokeWidth
         styles += encodeURIComponent(
             "        #" + shape.getAttr("id") + " {\n" +
             "            position: absolute;\n" +
+//             "            left: " + boundingRect.x + "px;\n" +
+//             "            top: " + boundingRect.y + "px;\n" +
+            "            z-index: " + shape.getAbsoluteZIndex() + ";\n" +
             "            left: " + shape.getAttr("x") + "px;\n" +
             "            top: " + shape.getAttr("y") + "px;\n" +
             "            width: " + shape.getAttr("width") + "px;\n" +
             "            height: " + shape.getAttr("height") + "px;\n" +
             "            transform: rotate(" + shape.getAttr("rotation") + "deg);\n" +
-            "            color: " + shape.getAttr("stroke") + ";\n" +
+            "            color: " + shape.getAttr("fill") + ";\n" +
             "            font-family: \"" + shape.getAttr("fontFamily") + "\", monospace;\n" +
             "            font-size: " + shape.getAttr("fontSize") + "px;\n" +
             "            font-style: " + shape.getAttr("fontStyle") + ";\n" +
@@ -878,9 +1139,8 @@ function generateHTML() {
             "            padding: " + shape.getAttr("padding") + ";\n" +
             "            line-height: " + shape.getAttr("lineHeight") + ";\n" +
             "            overflow: auto;\n" +
-            wrap +
             "        }\n" +
-            paraWrap
+            paraCSS
         );
     });
 
@@ -888,7 +1148,7 @@ function generateHTML() {
     //      data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA+...
     // API reference: https://konvajs.github.io/api/Konva.Stage.html#toDataURL__anchor
 
-    // Collect image and style info for all Shapes in the stage
+    // Collect image and style info for all Shapes other than Text in the stage
     shapes = stageDraw.find('Shape');
     bodyHTML += encodeURIComponent(
         "\n    <!-- " + (shapes.length - numTexts) + " Image(s) -->\n"
@@ -899,17 +1159,23 @@ function generateHTML() {
             bodyHTML += encodeURIComponent(
                 "    <div id=\"" + shape.getAttr("id") + "\">\n" +
                 "        <img src=\""
-//TODO Need special handling for an Image Shape???
-            ) + shape.toDataURL() + encodeURIComponent("\"/>\n" +
+            );
+            // For Konva Images, the underlying HTML Image being CORS compliant
+            bodyHTML += shape.toDataURL();
+            bodyHTML += encodeURIComponent("\"/>\n" +
                 "    </div>\n"
             );
-        
+
+            // Get left/x and top/y position of shape, including any transforms
+            var boundingRect = shape.getClientRect();
+
             // CSS positioning: https://www.elated.com/articles/css-positioning/
             styles += encodeURIComponent(
                 "        #" + shape.getAttr("id") + " {\n" +
                 "            position: absolute;\n" +
-                "            left: " + shape.getAttr("x") + "px;\n" +
-                "            top: " + shape.getAttr("y") + "px;\n" +
+                "            z-index: " + shape.getAbsoluteZIndex() + ";\n" +
+                "            left: " + boundingRect.x + "px;\n" +
+                "            top: " + boundingRect.y + "px;\n" +
                 "        }\n"
             );
         }
@@ -919,7 +1185,7 @@ function generateHTML() {
     downloadURI("data:text/html," +
         prefixHead + styles + suffixHead +
         prefixBody + bodyHTML + suffixBody, 'stage.html');
-}
+}   // End generateHTML()
 
 // From https://konvajs.github.io/docs/data_and_serialization/Stage_Data_URL.html
 function downloadURI(uri, name) {
@@ -931,4 +1197,3 @@ function downloadURI(uri, name) {
     document.body.removeChild(link);
     delete link;
 }
-

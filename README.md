@@ -1,5 +1,16 @@
-# 513_f2018 Project (name in progress)
-##### By Ashley Hale
+# 513_f2018 Project: [Draw a Webpage!][2]
+#### By Ashley Hale
+
+### Final Project
+
+* Run the application here: [Draw a Webpage!][2]
+* [User Manual][3] (Microsoft Word)
+* [Project Report][4] (Microsoft Word)
+* [Project Presentation][5] (Microsoft PowerPoint)
+* [Resources Statement][6] (README.txt)
+* [GitHub Repository][7]
+
+### Original Problem Statement and Goals
 
 __*The problem:*__ People not proficient in HTML or CSS having trouble creating the UI for their website from scratch.
 
@@ -12,4 +23,9 @@ __*How:*__ I would use my CS server website [weblab.cs.uml.edu/~ahale/513_f2018]
 ****Weekly Updates are [here][1]****
 
 [1]: docs/weekly_updates
-[2]: http://weblab.cs.uml.edu/~ahale/513_f2018
+[2]: http://weblab.cs.uml.edu/~ahale/513_f2018/src/index.html
+[3]: docs/DrawAWebpageManual.docx
+[4]: docs/DrawAWebpageProjectReport.docx
+[5]: docs/DrawAWebpage.pptx
+[6]: docs/README.txt
+[7]: https://github.com/ashhale/513_f2018
